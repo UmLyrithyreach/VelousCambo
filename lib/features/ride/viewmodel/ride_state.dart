@@ -1,4 +1,4 @@
-import 'package:velouscambo/models/rental_model.dart';
+import 'package:velouscambo_enhanced_new/models/rental_model.dart';
 
 abstract class RideState {
   const RideState();

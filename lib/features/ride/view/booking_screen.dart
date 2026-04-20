@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import 'package:velouscambo/core/constants/app_colors.dart';
-import 'package:velouscambo/models/bike_model.dart';
-import 'package:velouscambo/models/station_model.dart';
-import 'package:velouscambo/features/auth/viewmodel/auth_viewmodel.dart';
-import 'package:velouscambo/features/ride/viewmodel/ride_viewmodel.dart';
-import 'package:velouscambo/features/ride/widgets/booking_cards.dart';
-import 'package:velouscambo/shared/widgets/custom_button.dart';
-import 'package:velouscambo/shared/widgets/section_label.dart';
+import 'package:velouscambo_enhanced_new/core/constants/app_colors.dart';
+import 'package:velouscambo_enhanced_new/models/bike_model.dart';
+import 'package:velouscambo_enhanced_new/models/station_model.dart';
+import 'package:velouscambo_enhanced_new/features/auth/viewmodel/auth_viewmodel.dart';
+import 'package:velouscambo_enhanced_new/features/ride/viewmodel/ride_viewmodel.dart';
+import 'package:velouscambo_enhanced_new/features/ride/widgets/booking_cards.dart';
+import 'package:velouscambo_enhanced_new/shared/widgets/custom_button.dart';
+import 'package:velouscambo_enhanced_new/shared/widgets/section_label.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});

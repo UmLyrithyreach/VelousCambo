@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:velouscambo/core/constants/app_colors.dart';
-import 'package:velouscambo/models/bike_model.dart';
-import 'package:velouscambo/models/station_model.dart';
-import 'package:velouscambo/shared/widgets/icon_box.dart';
-import 'package:velouscambo/shared/widgets/surface_card.dart';
+import 'package:velouscambo_enhanced_new/core/constants/app_colors.dart';
+import 'package:velouscambo_enhanced_new/models/bike_model.dart';
+import 'package:velouscambo_enhanced_new/models/station_model.dart';
+import 'package:velouscambo_enhanced_new/shared/widgets/icon_box.dart';
+import 'package:velouscambo_enhanced_new/shared/widgets/surface_card.dart';
 
 // ─── Bike Detail Card ──────────────────────────────────────────────────────────
 

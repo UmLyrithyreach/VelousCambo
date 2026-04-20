@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:velouscambo/models/bike_model.dart';
-import 'package:velouscambo/models/rental_model.dart';
-import 'package:velouscambo/models/station_model.dart';
-import 'package:velouscambo/data/repositories/rental_repository.dart';
-import 'package:velouscambo/features/ride/viewmodel/ride_state.dart';
+import 'package:velouscambo_enhanced_new/models/bike_model.dart';
+import 'package:velouscambo_enhanced_new/models/rental_model.dart';
+import 'package:velouscambo_enhanced_new/models/station_model.dart';
+import 'package:velouscambo_enhanced_new/data/repositories/rental_repository.dart';
+import 'package:velouscambo_enhanced_new/features/ride/viewmodel/ride_state.dart';
 
 class RideViewModel extends ChangeNotifier {
   final RentalRepository _rentalRepo;
