@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:velouscambo_enhanced_new/core/constants/app_colors.dart';
 import 'package:velouscambo_enhanced_new/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:velouscambo_enhanced_new/features/history/viewmodel/history_viewmodel.dart';
 import 'package:velouscambo_enhanced_new/features/map/viewmodel/station_viewmodel.dart';
@@ -29,10 +28,11 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     final uid = context.read<AuthViewModel>().firebaseUser?.uid;
-    if (uid != null) {
-      context.read<StationViewModel>().init(uid);
-      context.read<HistoryViewModel>().load(uid);
-    }
+    // Use actual uid if logged in, otherwise use a test uid so stations
+    // still stream from Firestore during development testing.
+    final effectiveUid = uid ?? 'test-user-dev';
+    context.read<StationViewModel>().init(effectiveUid);
+    context.read<HistoryViewModel>().load(effectiveUid);
   }
 
   @override
