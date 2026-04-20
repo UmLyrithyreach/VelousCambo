@@ -18,8 +18,7 @@ class VelousCamboApp extends StatelessWidget {
       title: 'VelousCambo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      // TODO: revert to '/' once auth/splash are implemented by teammates
-      initialRoute: '/home',
+      initialRoute: '/',
       routes: {
         '/': (_) => const SplashScreen(),
         '/login': (_) => const LoginScreen(),
