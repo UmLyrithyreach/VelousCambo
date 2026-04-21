@@ -35,8 +35,20 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _confirmBooking() async {
-    final uid = context.read<AuthViewModel>().firebaseUser?.uid;
+    final authVm = context.read<AuthViewModel>();
+    final uid = authVm.firebaseUser?.uid;
     if (uid == null) return;
+
+    // Check subscription before booking
+    final user = authVm.userModel;
+    if (user == null || !user.hasActivePlan) {
+      Navigator.pushNamed(
+        context,
+        '/payment-type',
+        arguments: {'bike': _bike, 'station': _station},
+      );
+      return;
+    }
 
     final ok = await context.read<RideViewModel>().book(
           userId: uid,
@@ -45,7 +57,11 @@ class _BookingScreenState extends State<BookingScreen> {
         );
 
     if (ok && mounted) {
-      Navigator.pushReplacementNamed(context, '/active-rental');
+      Navigator.pushReplacementNamed(
+        context,
+        '/booking-confirmed',
+        arguments: _bike.id,
+      );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
