@@ -24,7 +24,7 @@ class SubscriptionPlan {
   });
 
   static List<SubscriptionPlan> get availablePlans => [
-        const SubscriptionPlan(
+        /*const SubscriptionPlan(
           type: PlanType.daily,
           title: 'Day Pass',
           priceLabel: '\$1.50',
@@ -38,7 +38,7 @@ class SubscriptionPlan {
             'Perfect for tourists',
             'Insurance included',
           ],
-        ),
+        ),*/
         const SubscriptionPlan(
           type: PlanType.monthly,
           title: 'Monthly Saver',
