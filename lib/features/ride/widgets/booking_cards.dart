@@ -5,7 +5,7 @@ import 'package:velouscambo_enhanced_new/models/station_model.dart';
 import 'package:velouscambo_enhanced_new/shared/widgets/icon_box.dart';
 import 'package:velouscambo_enhanced_new/shared/widgets/surface_card.dart';
 
-// ─── Bike Detail Card ───
+// ─── Bike Detail Card ──────────────────────────────────────────────────────────
 
 class BikeDetailCard extends StatelessWidget {
   final BikeModel bike;
@@ -63,7 +63,7 @@ class BikeDetailCard extends StatelessWidget {
   }
 }
 
-// ─── Station Card ───
+// ─── Station Card ──────────────────────────────────────────────────────────────
 
 class StationBookingCard extends StatelessWidget {
   final StationModel station;
@@ -112,7 +112,7 @@ class StationBookingCard extends StatelessWidget {
   }
 }
 
-// ─── Plan Card ───
+// ─── Plan Card ────────────────────────────────────────────────────────────────
 
 class PlanCard extends StatelessWidget {
   final dynamic user;
@@ -177,7 +177,7 @@ class PlanCard extends StatelessWidget {
   }
 }
 
-// ─── Star Row ───
+// ─── Star Row ─────────────────────────────────────────────────────────────────
 
 class StarRow extends StatelessWidget {
   final double rating;

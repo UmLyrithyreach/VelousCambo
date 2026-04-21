@@ -13,11 +13,11 @@ class RideViewModel extends ChangeNotifier {
   RideViewModel({RentalRepository? rentalRepository})
       : _rentalRepo = rentalRepository ?? RentalRepository();
 
-  // ── State ───
+  // ── State ─────────────────────────────────────────────────────────────────
 
   RideState get state => _state;
 
-  // ── Convenience getters (screens use these) ───
+  // ── Convenience getters (screens use these) ───────────────────────────────
 
   bool get isLoading => _state is RideConfirming;
 
@@ -27,7 +27,7 @@ class RideViewModel extends ChangeNotifier {
   RentalModel? get bookedRental =>
       _state is RideBooked ? (_state as RideBooked).rental : null;
 
-  // ── Actions ───
+  // ── Actions ───────────────────────────────────────────────────────────────
 
   /// Confirms the booking for [bike] at [station] for [userId].
   /// Returns `true` on success. The new rental is also picked up by
