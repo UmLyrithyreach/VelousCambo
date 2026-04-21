@@ -21,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final Map<String, BitmapDescriptor> _markerCache = {};
   Set<Marker> _markers = {};
   bool _locationLoading = false;
+  bool _sheetOpen = false;
 
   static const _phnomPenh = LatLng(11.5564, 104.9282);
 
@@ -103,8 +104,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onStationTap(StationModel station) {
+    // If a sheet is already open, close it first then reopen for the new station
+    if (_sheetOpen) {
+      Navigator.of(context).pop();
+    }
+
     final sp = context.read<StationViewModel>();
     sp.selectStation(station);
+    setState(() => _sheetOpen = true);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -113,7 +121,10 @@ class _HomeScreenState extends State<HomeScreen> {
         value: sp,
         child: const StationDetailSheet(),
       ),
-    ).whenComplete(sp.clearSelectedStation);
+    ).whenComplete(() {
+      sp.clearSelectedStation();
+      if (mounted) setState(() => _sheetOpen = false);
+    });
   }
 
   Future<void> _goToMyLocation() async {
@@ -169,6 +180,11 @@ class _HomeScreenState extends State<HomeScreen> {
             mapToolbarEnabled: false,
             style: _mapStyle,
             onMapCreated: (ctrl) => _mapController = ctrl,
+            onTap: (_) {
+              if (_sheetOpen) {
+                Navigator.of(context).pop();
+              }
+            },
           ),
 
           // Top search bar
