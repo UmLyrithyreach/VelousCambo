@@ -1,5 +1,4 @@
 # Miscellaneous
-.vscode
 *.class
 *.log
 *.pyc
@@ -49,4 +48,3 @@ app.*.map.json
 .env
 *.env
 .env.*
-/web/index.html
