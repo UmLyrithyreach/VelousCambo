@@ -7,6 +7,7 @@ import 'package:velouscambo_enhanced_new/features/main/view/main_screen.dart';
 import 'package:velouscambo_enhanced_new/features/ride/view/booking_screen.dart';
 import 'package:velouscambo_enhanced_new/features/ride/view/active_rental_screen.dart';
 import 'package:velouscambo_enhanced_new/features/profile/view/edit_profile_screen.dart';
+import 'package:velouscambo_enhanced_new/features/profile/view/subscription_screen.dart';
 import 'package:velouscambo_enhanced_new/features/search/view/search_screen.dart';
 
 class VelousCamboApp extends StatelessWidget {
@@ -28,6 +29,7 @@ class VelousCamboApp extends StatelessWidget {
         '/booking': (_) => const BookingScreen(),
         '/active-rental': (_) => const ActiveRentalScreen(),
         '/edit-profile': (_) => const EditProfileScreen(),
+        '/subscription': (_) => const SubscriptionScreen(),
       },
     );
   }
