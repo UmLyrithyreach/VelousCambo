@@ -132,6 +132,14 @@ class AuthViewModel extends ChangeNotifier {
     await _repository.updateProfile(_firebaseUser!.uid, data);
   }
 
+  Future<void> updateUserPlan({required String plan, required DateTime expiry}) async {
+    if (_firebaseUser == null) return;
+    await _repository.updateProfile(_firebaseUser!.uid, {
+      'plan': plan,
+      'planExpiry': expiry.toIso8601String(),
+    });
+  }
+
   // ── Error mapping ─────────────────────────────────────────────────────────
 
   String _friendlyError(String code) {
