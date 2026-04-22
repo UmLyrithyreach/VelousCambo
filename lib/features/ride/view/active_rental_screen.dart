@@ -34,10 +34,12 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         final rental = context.read<StationViewModel>().activeRental;
-        setState(() {
-          _rental = rental;
-          _elapsed = rental?.elapsed ?? _elapsed + const Duration(seconds: 1);
-        });
+        if (rental != null) {
+          setState(() {
+            _rental = rental;
+            _elapsed = rental.elapsed;
+          });
+        }
       }
     });
 

@@ -292,11 +292,12 @@ class _ActiveRentalBannerState extends State<_ActiveRentalBanner> {
     _elapsed = widget.elapsed;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
-        setState(() {
-          _elapsed =
-              context.read<StationViewModel>().activeRental?.elapsedFormatted ??
-                  _elapsed;
-        });
+        final activeRental = context.read<StationViewModel>().activeRental;
+        if (activeRental != null) {
+          setState(() {
+            _elapsed = activeRental.elapsedFormatted;
+          });
+        }
       }
     });
   }

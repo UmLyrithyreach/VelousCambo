@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:velouscambo_enhanced_new/data/repositories/auth_repository.dart';
@@ -136,7 +137,15 @@ class AuthViewModel extends ChangeNotifier {
     if (_firebaseUser == null) return;
     await _repository.updateProfile(_firebaseUser!.uid, {
       'plan': plan,
-      'planExpiry': expiry.toIso8601String(),
+      'planExpiry': Timestamp.fromDate(expiry),
+    });
+  }
+
+  Future<void> cancelSubscription() async {
+    if (_firebaseUser == null) return;
+    await _repository.updateProfile(_firebaseUser!.uid, {
+      'plan': 'none',
+      'planExpiry': null,
     });
   }
 

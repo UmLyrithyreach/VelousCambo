@@ -55,7 +55,7 @@ class SubscriptionViewModel extends ChangeNotifier {
       final String planStr = _state.selectedPlan.toString().split('.').last;
       final expiry = _calculateExpiry(_state.selectedPlan);
       
-      _authVm.updateUserPlan(plan: planStr, expiry: expiry);
+      await _authVm.updateUserPlan(plan: planStr, expiry: expiry);
       
       _state = _state.copyWith(isLoading: false, isPurchased: true);
       notifyListeners();

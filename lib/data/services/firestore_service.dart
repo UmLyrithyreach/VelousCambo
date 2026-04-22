@@ -34,10 +34,8 @@ class FirestoreService {
       'name': name,
       'email': email,
       'photoUrl': null,
-      'plan': 'monthly',
-      'planExpiry': Timestamp.fromDate(
-        DateTime.now().add(const Duration(days: 30)),
-      ),
+      'plan': 'none',
+      'planExpiry': null,
     });
   }
 

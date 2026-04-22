@@ -4,15 +4,20 @@ import 'package:velouscambo_enhanced_new/models/user_model.dart';
 class UserDto {
   static UserModel fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    DateTime? expiry;
+    if (data['planExpiry'] is Timestamp) {
+      expiry = (data['planExpiry'] as Timestamp).toDate();
+    } else if (data['planExpiry'] is String) {
+      expiry = DateTime.tryParse(data['planExpiry'] as String);
+    }
+
     return UserModel(
       id: doc.id,
       name: data['name'] ?? '',
       email: data['email'] ?? '',
       photoUrl: data['photoUrl'],
       plan: data['plan'] ?? 'none',
-      planExpiry: data['planExpiry'] != null
-          ? (data['planExpiry'] as Timestamp).toDate()
-          : null,
+      planExpiry: expiry,
     );
   }
 
