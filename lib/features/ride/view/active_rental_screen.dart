@@ -17,7 +17,6 @@ class ActiveRentalScreen extends StatefulWidget {
 
 class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     with SingleTickerProviderStateMixin {
-  static const int _unlockSeconds = 30;
   late Timer _ticker;
   late AnimationController _pulseCtrl;
 
