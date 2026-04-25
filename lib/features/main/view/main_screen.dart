@@ -7,6 +7,7 @@ import 'package:velouscambo_enhanced_new/features/map/view/home_screen.dart';
 import 'package:velouscambo_enhanced_new/features/history/view/history_screen.dart';
 import 'package:velouscambo_enhanced_new/features/profile/view/profile_screen.dart';
 import 'package:velouscambo_enhanced_new/shared/widgets/navigation_bar/navigation_bar.dart';
+import 'package:velouscambo_enhanced_new/features/ride/viewmodel/ride_viewmodel.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,12 +28,17 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    final uid = context.read<AuthViewModel>().firebaseUser?.uid;
+    final auth = context.read<AuthViewModel>();
+    final uid = auth.firebaseUser?.uid;
+    final plan = auth.userModel?.plan;
+    
     // Use actual uid if logged in, otherwise use a test uid so stations
     // still stream from Firestore during development testing.
     final effectiveUid = uid ?? 'test-user-dev';
+    
     context.read<StationViewModel>().init(effectiveUid);
     context.read<HistoryViewModel>().load(effectiveUid);
+    context.read<RideViewModel>().init(effectiveUid, plan);
   }
 
   @override

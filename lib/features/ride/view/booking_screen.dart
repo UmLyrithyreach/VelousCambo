@@ -36,12 +36,15 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Future<void> _confirmBooking() async {
     final authVm = context.read<AuthViewModel>();
-    final uid = authVm.firebaseUser?.uid;
-    if (uid == null) return;
+    final rideVm = context.read<RideViewModel>();
 
-    // Check subscription before booking
+    final uid = authVm.firebaseUser?.uid;
     final user = authVm.userModel;
-    if (user == null || !user.hasActivePlan) {
+
+    if (uid == null || user == null) return;
+
+// subscription check
+    if (!user.hasActivePlan) {
       Navigator.pushNamed(
         context,
         '/payment-type',
@@ -50,27 +53,31 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    final ok = await context.read<RideViewModel>().book(
-          userId: uid,
-          bike: _bike,
-          station: _station,
-        );
+    final ok = await rideVm.book(
+      userId: uid,
+      bike: _bike,
+      station: _station,
+    );
 
-    if (ok && mounted) {
-      Navigator.pushReplacementNamed(
-        context,
-        '/booking-confirmed',
-        arguments: _bike.id,
-      );
-    } else if (mounted) {
+    if (!mounted) return;
+
+    if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.read<RideViewModel>().error ??
-              'Failed to start rental. Please try again.'),
+          content: Text(
+            rideVm.error ?? 'Failed to start rental. Please try again.',
+          ),
           backgroundColor: AppColors.primary,
         ),
       );
+      return;
     }
+
+    Navigator.pushReplacementNamed(
+      context,
+      '/booking-confirmed',
+      arguments: _bike.id,
+    );
   }
 
   @override

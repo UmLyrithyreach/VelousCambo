@@ -147,6 +147,7 @@ class SubscriptionScreen extends StatelessWidget {
       }
 
       // If no booking args, just go back (came from Profile)
+      if (!context.mounted) return;
       Navigator.pop(context);
     }
   }

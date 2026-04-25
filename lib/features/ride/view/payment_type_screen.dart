@@ -14,7 +14,8 @@ class PaymentTypeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Get arguments (bike and station) if they exist
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -32,7 +33,6 @@ class PaymentTypeScreen extends StatelessWidget {
               style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: 30),
-            
             _PaymentOptionCard(
               title: 'Pay to Go',
               subtitle: 'One-time payment for this ride only',
@@ -42,9 +42,7 @@ class PaymentTypeScreen extends StatelessWidget {
                 _showPaymentMethod(context, args);
               },
             ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
-            
             const SizedBox(height: 16),
-            
             _PaymentOptionCard(
               title: 'Buy a Subscription',
               subtitle: 'Unlock unlimited rides and save more',
@@ -54,10 +52,11 @@ class PaymentTypeScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, '/subscription', arguments: args);
               },
-            ).animate().fadeIn(delay: 150.ms, duration: 400.ms).slideY(begin: 0.1),
-            
+            )
+                .animate()
+                .fadeIn(delay: 150.ms, duration: 400.ms)
+                .slideY(begin: 0.1),
             const Spacer(),
-            
             SecondaryButton(
               label: 'Cancel Booking',
               onPressed: () => Navigator.pop(context),
@@ -88,7 +87,8 @@ class PaymentTypeScreen extends StatelessWidget {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
+              leading:
+                  const Icon(Icons.qr_code_scanner, color: AppColors.primary),
               title: const Text('ABA / PayWay QR'),
               onTap: () => _processPayToGo(context, args),
             ),
@@ -99,21 +99,36 @@ class PaymentTypeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _processPayToGo(BuildContext context, Map<String, dynamic>? args) async {
+  Future<void> _processPayToGo(
+      BuildContext context, Map<String, dynamic>? args) async {
     Navigator.pop(context); // Close sheet
-    
+
     if (args != null) {
       final rideVm = context.read<RideViewModel>();
       final authVm = context.read<AuthViewModel>();
       final uid = authVm.firebaseUser?.uid;
-      
+
       if (uid != null) {
         final bike = args['bike'];
         final station = args['station'];
-        
-        final success = await rideVm.book(userId: uid, bike: bike, station: station);
-        if (success && context.mounted) {
-          Navigator.pushReplacementNamed(context, '/booking-confirmed', arguments: bike.id);
+
+        final ok = await rideVm.book(
+          userId: uid,
+          bike: bike,
+          station: station,
+        );
+
+        if (!context.mounted) return;
+
+        if (!ok) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                rideVm.error ?? 'Payment succeeded but booking failed.',
+              ),
+            ),
+          );
+          return;
         }
       }
     }
@@ -156,10 +171,14 @@ class _PaymentOptionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isRecommended ? AppColors.primarySurface : AppColors.background,
+                color: isRecommended
+                    ? AppColors.primarySurface
+                    : AppColors.background,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: isRecommended ? AppColors.primary : AppColors.textMedium),
+              child: Icon(icon,
+                  color:
+                      isRecommended ? AppColors.primary : AppColors.textMedium),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -173,7 +192,8 @@ class _PaymentOptionCard extends StatelessWidget {
             ),
             Text(
               price,
-              style: AppTextStyles.headlineSmall.copyWith(color: AppColors.primary),
+              style: AppTextStyles.headlineSmall
+                  .copyWith(color: AppColors.primary),
             ),
           ],
         ),

@@ -4,9 +4,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:velouscambo_enhanced_new/core/constants/app_colors.dart';
 import 'package:velouscambo_enhanced_new/models/rental_model.dart';
-import 'package:velouscambo_enhanced_new/features/map/viewmodel/station_viewmodel.dart';
-import 'package:velouscambo_enhanced_new/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:velouscambo_enhanced_new/shared/widgets/custom_button.dart';
+import 'package:velouscambo_enhanced_new/features/ride/viewmodel/ride_viewmodel.dart';
+import 'package:velouscambo_enhanced_new/features/ride/state/ride_state.dart';
 
 class ActiveRentalScreen extends StatefulWidget {
   const ActiveRentalScreen({super.key});
@@ -20,8 +20,6 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
   static const int _unlockSeconds = 30;
   late Timer _ticker;
   late AnimationController _pulseCtrl;
-  Duration _elapsed = Duration.zero;
-  RentalModel? _rental;
 
   @override
   void initState() {
@@ -32,19 +30,8 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     )..repeat(reverse: true);
 
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        final rental = context.read<StationViewModel>().activeRental;
-        if (rental != null) {
-          setState(() {
-            _rental = rental;
-            _elapsed = rental.elapsed;
-          });
-        }
-      }
+      if (mounted) setState(() {});
     });
-
-    _rental = context.read<StationViewModel>().activeRental;
-    if (_rental != null) _elapsed = _rental!.elapsed;
   }
 
   @override
@@ -54,21 +41,13 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     super.dispose();
   }
 
-  int _getPlanLimitMinutes(String? plan) {
-    switch (plan?.toLowerCase()) {
-      case 'daily':
-        return 30;
-      case 'monthly':
-        return 45;
-      case 'annual':
-        return 60;
-      default:
-        return 30; // Default/Pay-to-Go
-    }
-  }
-
   Future<void> _endRide() async {
-    final sp = context.read<StationViewModel>();
+    final rideVm = context.read<RideViewModel>();
+    final state = rideVm.state;
+    if (state is! RideActive) return;
+
+    final rental = state.rental;
+    final elapsed = rental.elapsed;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
@@ -79,7 +58,7 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
         title: const Text('End Ride?',
             style: TextStyle(fontWeight: FontWeight.w700)),
         content: Text(
-          'You have been riding for ${_formatDuration(_elapsed)}.\n'
+          'You have been riding for ${_formatDuration(elapsed)}.\n'
           'Are you sure you want to return this bike?',
           style: const TextStyle(color: AppColors.textMedium, height: 1.4),
         ),
@@ -100,7 +79,8 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     );
 
     if (confirm != true) return;
-    final ok = await sp.endRental();
+
+    final ok = await rideVm.endRental();
     if (ok && mounted) {
       messenger.showSnackBar(
         SnackBar(
@@ -108,7 +88,7 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
             const Icon(Icons.check_circle_rounded,
                 color: Colors.white, size: 18),
             const SizedBox(width: 10),
-            Text('Ride ended • ${_formatDuration(_elapsed)} total'),
+            Text('Ride ended • ${_formatDuration(elapsed)} total'),
           ]),
           backgroundColor: AppColors.available,
           behavior: SnackBarBehavior.floating,
@@ -131,20 +111,43 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
 
   @override
   Widget build(BuildContext context) {
-    final sp = context.watch<StationViewModel>();
-    final authVm = context.watch<AuthViewModel>();
-    final rental = sp.activeRental ?? _rental;
+    final rideVm = context.watch<RideViewModel>();
+    final state = rideVm.state;
 
-    if (rental == null) {
+    // 1. Handle non-active states
+    if (state is! RideActive) {
       return Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(title: const Text('Active Ride')),
-        body: const Center(child: Text('No active rental found.')),
+        body: Center(
+          child: state is RideLoading
+              ? const CircularProgressIndicator()
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.info_outline, size: 48, color: AppColors.textMedium),
+                    const SizedBox(height: 16),
+                    Text(
+                      state is RideError ? state.message : 'No active rental found.',
+                      style: const TextStyle(color: AppColors.textMedium),
+                    ),
+                    const SizedBox(height: 24),
+                    TextButton(
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+                      child: const Text('Return to Map'),
+                    ),
+                  ],
+                ),
+        ),
       );
     }
 
-    final planLimitMinutes = _getPlanLimitMinutes(authVm.userModel?.plan);
+    // 2. Pure Rendering for Active State
+    final rental = state.rental;
+    final planLimitMinutes = state.planLimitMinutes;
+    final elapsed = rental.elapsed;
     final remainingUnlockSeconds =
-        (_unlockSeconds - _elapsed.inSeconds).clamp(0, _unlockSeconds);
+        (30 - elapsed.inSeconds).clamp(0, 30);
     final isUnlocking = remainingUnlockSeconds > 0;
 
     return Scaffold(
@@ -164,9 +167,8 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Timer ring
             _TimerRing(
-              elapsed: _elapsed,
+              elapsed: elapsed,
               isUnlocking: isUnlocking,
               remainingUnlockSeconds: remainingUnlockSeconds,
               pulseAnim: _pulseCtrl,
@@ -178,7 +180,6 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
 
             const SizedBox(height: 28),
 
-            // Bike + station info
             _InfoCard(rental: rental)
                 .animate()
                 .fadeIn(delay: 150.ms)
@@ -186,7 +187,6 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
 
             const SizedBox(height: 20),
 
-            // Unlock countdown / ride status
             _UnlockStatusCard(
               bikeCode: rental.bikeCode,
               isUnlocking: isUnlocking,
@@ -199,7 +199,7 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
             DestructiveButton(
               label: 'End Ride',
               onPressed: _endRide,
-              isLoading: sp.isLoading,
+              isLoading: rideVm.isLoading,
             ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.2),
 
             const SizedBox(height: 24),
@@ -209,8 +209,6 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     );
   }
 }
-
-// ─── Timer Ring ───
 
 class _TimerRing extends StatelessWidget {
   static const int _unlockSeconds = 30;
@@ -232,13 +230,10 @@ class _TimerRing extends StatelessWidget {
   Widget build(BuildContext context) {
     final minutes = elapsed.inMinutes;
     final seconds = elapsed.inSeconds % 60;
-    
-    // Calculate progress based on subscription plan limits
+
     final limitSeconds = planLimitMinutes * 60;
     final rideProgress = (elapsed.inSeconds / limitSeconds).clamp(0.0, 1.0);
-    
-    final unlockProgress =
-        (_unlockSeconds - remainingUnlockSeconds) / _unlockSeconds;
+    final unlockProgress = (_unlockSeconds - remainingUnlockSeconds) / _unlockSeconds;
 
     return AnimatedBuilder(
       animation: pulseAnim,
@@ -252,7 +247,6 @@ class _TimerRing extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Background ring
                 SizedBox.expand(
                   child: CircularProgressIndicator(
                     value: 1,
@@ -260,7 +254,6 @@ class _TimerRing extends StatelessWidget {
                     color: AppColors.primaryLight.withOpacity(0.2),
                   ),
                 ),
-                // Progress ring
                 SizedBox.expand(
                   child: CircularProgressIndicator(
                     value: isUnlocking ? unlockProgress : rideProgress,
@@ -269,7 +262,6 @@ class _TimerRing extends StatelessWidget {
                     strokeCap: StrokeCap.round,
                   ),
                 ),
-                // Content
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -278,38 +270,15 @@ class _TimerRing extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         remainingUnlockSeconds.toString().padLeft(2, '0'),
-                        style: const TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.available,
-                        ),
+                        style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w800, color: AppColors.available),
                       ),
-                      const Text(
-                        'unlock window',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMedium,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      const Text('unlock window', style: TextStyle(fontSize: 12, color: AppColors.textMedium, fontWeight: FontWeight.w600)),
                     ] else ...[
                       Text(
                         '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                        style: const TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
-                          letterSpacing: -1,
-                        ),
+                        style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w800, color: AppColors.textDark, letterSpacing: -1),
                       ),
-                      Text(
-                        'of $planLimitMinutes min free',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textMedium,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      Text('of $planLimitMinutes min free', style: const TextStyle(fontSize: 14, color: AppColors.textMedium, fontWeight: FontWeight.w600)),
                     ],
                   ],
                 ),
@@ -321,8 +290,6 @@ class _TimerRing extends StatelessWidget {
     );
   }
 }
-
-// ─── Info Card ───
 
 class _InfoCard extends StatelessWidget {
   final RentalModel rental;
@@ -352,11 +319,9 @@ class _InfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Bike #${rental.bikeCode}',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                Text('Bike #${rental.bikeCode}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
                 const SizedBox(height: 2),
-                Text(rental.stationName,
-                    style: const TextStyle(color: AppColors.textMedium, fontSize: 14)),
+                Text(rental.stationName, style: const TextStyle(color: AppColors.textMedium, fontSize: 14)),
               ],
             ),
           ),
@@ -365,8 +330,6 @@ class _InfoCard extends StatelessWidget {
     );
   }
 }
-
-// ─── Unlock Status Card ───
 
 class _UnlockStatusCard extends StatelessWidget {
   final String bikeCode;
@@ -393,30 +356,19 @@ class _UnlockStatusCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isUnlocking ? AppColors.available.withOpacity(0.08) : AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isUnlocking ? AppColors.available.withOpacity(0.3) : AppColors.border,
-        ),
+        border: Border.all(color: isUnlocking ? AppColors.available.withOpacity(0.3) : AppColors.border),
       ),
       child: Row(
         children: [
-          Icon(
-            isUnlocking ? Icons.timer_outlined : Icons.check_circle_outline_rounded,
-            color: isUnlocking ? AppColors.available : AppColors.primary,
-          ),
+          Icon(isUnlocking ? Icons.timer_outlined : Icons.check_circle_outline_rounded, color: isUnlocking ? AppColors.available : AppColors.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      color: isUnlocking ? AppColors.available : AppColors.textDark,
-                    )),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: isUnlocking ? AppColors.available : AppColors.textDark)),
                 const SizedBox(height: 2),
-                Text(message,
-                    style: const TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.3)),
+                Text(message, style: const TextStyle(color: AppColors.textMedium, fontSize: 13, height: 1.3)),
               ],
             ),
           ),

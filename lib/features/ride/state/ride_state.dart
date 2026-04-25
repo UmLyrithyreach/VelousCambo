@@ -9,15 +9,20 @@ class RideInitial extends RideState {
   const RideInitial();
 }
 
-/// Booking request is being sent to Firestore.
-class RideConfirming extends RideState {
-  const RideConfirming();
+/// Action in progress (booking or ending rental).
+class RideLoading extends RideState {
+  const RideLoading();
 }
 
-/// Booking succeeded — rental has started.
-class RideBooked extends RideState {
+/// An active ride is in progress.
+class RideActive extends RideState {
   final RentalModel rental;
-  const RideBooked(this.rental);
+  final int planLimitMinutes; // Data prepared for the UI
+  
+  const RideActive({
+    required this.rental,
+    required this.planLimitMinutes,
+  });
 }
 
 /// Booking failed.
