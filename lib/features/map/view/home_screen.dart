@@ -8,6 +8,8 @@ import 'package:velouscambo_enhanced_new/core/constants/app_colors.dart';
 import 'package:velouscambo_enhanced_new/models/station_model.dart';
 import 'package:velouscambo_enhanced_new/features/map/viewmodel/station_viewmodel.dart';
 import 'package:velouscambo_enhanced_new/features/map/widgets/station_detail_sheet.dart';
+import 'package:velouscambo_enhanced_new/features/ride/viewmodel/ride_viewmodel.dart';
+import 'package:velouscambo_enhanced_new/features/ride/state/ride_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -151,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activeRental = context.watch<StationViewModel>().activeRental;
+    final rideState = context.watch<RideViewModel>().state;
 
     return Scaffold(
       body: Stack(
@@ -181,14 +183,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // Active rental banner
-          if (activeRental != null)
+          if (rideState is RideActive)
             Positioned(
               bottom: 16,
               left: 16,
               right: 16,
               child: _ActiveRentalBanner(
-                bikeCode: activeRental.bikeCode,
-                elapsed: activeRental.elapsedFormatted,
+                bikeCode: rideState.rental.bikeCode,
+                elapsed: rideState.elapsed,
                 onTap: () => Navigator.pushNamed(context, '/active-rental'),
               ),
             ),
@@ -196,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Location FAB
           Positioned(
             right: 16,
-            bottom: activeRental != null ? 100 : 24,
+            bottom: rideState is RideActive ? 100 : 24,
             child: _LocationFab(
               isLoading: _locationLoading,
               onTap: _goToMyLocation,
@@ -266,10 +268,9 @@ class _SearchBar extends StatelessWidget {
 }
 
 // ─── Active Rental Banner ────────────────────────────────────────────────────
-
-class _ActiveRentalBanner extends StatefulWidget {
+class _ActiveRentalBanner extends StatelessWidget {
   final String bikeCode;
-  final String elapsed;
+  final Duration elapsed;
   final VoidCallback onTap;
 
   const _ActiveRentalBanner({
@@ -278,110 +279,39 @@ class _ActiveRentalBanner extends StatefulWidget {
     required this.onTap,
   });
 
-  @override
-  State<_ActiveRentalBanner> createState() => _ActiveRentalBannerState();
-}
-
-class _ActiveRentalBannerState extends State<_ActiveRentalBanner> {
-  late Timer _timer;
-  late String _elapsed;
-
-  @override
-  void initState() {
-    super.initState();
-    _elapsed = widget.elapsed;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        final activeRental = context.read<StationViewModel>().activeRental;
-        if (activeRental != null) {
-          setState(() {
-            _elapsed = activeRental.elapsedFormatted;
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
+  String _format(Duration d) {
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.primary,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.35),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-            ),
-          ],
         ),
         child: Row(
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.pedal_bike_rounded,
-                  color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 14),
+            const Icon(Icons.pedal_bike, color: Colors.white),
+            const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Bike ${widget.bikeCode} • Active',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    'Time: $_elapsed',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Bike $bikeCode • ${_format(elapsed)}',
+                style: const TextStyle(color: Colors.white),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'View',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-            ),
+            const Text('View', style: TextStyle(color: Colors.white)),
           ],
         ),
       ),
     );
   }
 }
-
 // ─── Location FAB ────────────────────────────────────────────────────────────
 
 class _LocationFab extends StatelessWidget {

@@ -17,11 +17,17 @@ class RideLoading extends RideState {
 /// An active ride is in progress.
 class RideActive extends RideState {
   final RentalModel rental;
-  final int planLimitMinutes; // Data prepared for the UI
-  
+  final Duration elapsed;
+  final int planLimitMinutes;
+  final int remainingUnlockSeconds;
+  final bool isUnlocking;
+
   const RideActive({
     required this.rental,
+    required this.elapsed,
     required this.planLimitMinutes,
+    required this.remainingUnlockSeconds,
+    required this.isUnlocking,
   });
 }
 

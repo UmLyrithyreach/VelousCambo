@@ -7,6 +7,7 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/section_label.dart';
 import '../viewmodel/ride_viewmodel.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import 'package:velouscambo_enhanced_new/features/ride/state/ride_state.dart';
 
 class PaymentTypeScreen extends StatelessWidget {
   const PaymentTypeScreen({super.key});
@@ -106,6 +107,7 @@ class PaymentTypeScreen extends StatelessWidget {
     if (args != null) {
       final rideVm = context.read<RideViewModel>();
       final authVm = context.read<AuthViewModel>();
+      final state = rideVm.state;
       final uid = authVm.firebaseUser?.uid;
 
       if (uid != null) {
@@ -124,7 +126,9 @@ class PaymentTypeScreen extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                rideVm.error ?? 'Payment succeeded but booking failed.',
+                state is RideError
+                    ? state.message
+                    : 'Payment succeeded but booking failed.',
               ),
             ),
           );

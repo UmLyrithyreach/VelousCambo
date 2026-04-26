@@ -17,7 +17,6 @@ class ActiveRentalScreen extends StatefulWidget {
 
 class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     with SingleTickerProviderStateMixin {
-  late Timer _ticker;
   late AnimationController _pulseCtrl;
 
   @override
@@ -28,14 +27,10 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
   }
 
   @override
   void dispose() {
-    _ticker.cancel();
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -45,8 +40,7 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     final state = rideVm.state;
     if (state is! RideActive) return;
 
-    final rental = state.rental;
-    final elapsed = rental.elapsed;
+    final elapsed = state.elapsed;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
@@ -144,10 +138,7 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
     // 2. Pure Rendering for Active State
     final rental = state.rental;
     final planLimitMinutes = state.planLimitMinutes;
-    final elapsed = rental.elapsed;
-    final remainingUnlockSeconds =
-        (30 - elapsed.inSeconds).clamp(0, 30);
-    final isUnlocking = remainingUnlockSeconds > 0;
+    final elapsed = state.elapsed;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -168,8 +159,8 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
           children: [
             _TimerRing(
               elapsed: elapsed,
-              isUnlocking: isUnlocking,
-              remainingUnlockSeconds: remainingUnlockSeconds,
+              isUnlocking: state.isUnlocking,
+              remainingUnlockSeconds: state.remainingUnlockSeconds,
               pulseAnim: _pulseCtrl,
               planLimitMinutes: planLimitMinutes,
             )
@@ -188,8 +179,8 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
 
             _UnlockStatusCard(
               bikeCode: rental.bikeCode,
-              isUnlocking: isUnlocking,
-              remainingUnlockSeconds: remainingUnlockSeconds,
+              isUnlocking: state.isUnlocking,
+              remainingUnlockSeconds: state.remainingUnlockSeconds,
               planLimitMinutes: planLimitMinutes,
             ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.05),
 
@@ -198,7 +189,7 @@ class _ActiveRentalScreenState extends State<ActiveRentalScreen>
             DestructiveButton(
               label: 'End Ride',
               onPressed: _endRide,
-              isLoading: rideVm.isLoading,
+              isLoading: rideVm.isLoading
             ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.2),
 
             const SizedBox(height: 24),

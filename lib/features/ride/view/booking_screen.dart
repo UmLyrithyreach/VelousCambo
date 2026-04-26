@@ -9,6 +9,7 @@ import 'package:velouscambo_enhanced_new/features/ride/viewmodel/ride_viewmodel.
 import 'package:velouscambo_enhanced_new/features/ride/widgets/booking_cards.dart';
 import 'package:velouscambo_enhanced_new/shared/widgets/custom_button.dart';
 import 'package:velouscambo_enhanced_new/shared/widgets/section_label.dart';
+import 'package:velouscambo_enhanced_new/features/ride/state/ride_state.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -37,6 +38,7 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _confirmBooking() async {
     final authVm = context.read<AuthViewModel>();
     final rideVm = context.read<RideViewModel>();
+    final state = rideVm.state;
 
     final uid = authVm.firebaseUser?.uid;
     final user = authVm.userModel;
@@ -65,7 +67,9 @@ class _BookingScreenState extends State<BookingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            rideVm.error ?? 'Failed to start rental. Please try again.',
+            state is RideError
+                ? state.message
+                : 'Failed to start rental. Please try again.',
           ),
           backgroundColor: AppColors.primary,
         ),

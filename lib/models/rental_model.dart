@@ -25,7 +25,7 @@ class RentalModel {
 
   bool get isActive => status == 'active';
 
-  Duration get elapsed => DateTime.now().difference(startTime);
+  /*Duration get elapsed => DateTime.now().difference(startTime);
 
   String get elapsedFormatted {
     final d = elapsed;
@@ -34,5 +34,5 @@ class RentalModel {
     final s = d.inSeconds % 60;
     if (h > 0) return '${h}h ${m.toString().padLeft(2, '0')}m';
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
+  }*/
 }
